@@ -29,3 +29,67 @@ For supported datasets, refer to [`REAL_DATASET_CONFIGS(src/data/configs.py)`](h
 To train on your datasets, add them under [`src/data/raw_data`](https://github.com/ZHZisZZ/modpo/blob/main/src/data/raw_data) and modify [`REAL_DATASET_CONFIGS(src/data/configs.py)`](https://github.com/ZHZisZZ/modpo/blob/main/src/data/configs.py#L19) accordingly. Please see [`src/data/raw_data/shp`](https://github.com/ZHZisZZ/modpo/blob/main/src/data/raw_data/shp.py) for an example.
 
 У нас свой датасет. Скорее всего, нужно сделать как они предлагают 
+
+# Примерное решение от ChatGPT
+Нужно иметь в виду, что нам нужно сделать MODPO по своим метрикам, а в статье делают алаймент для целей AI safety
+Исходя из загруженной вами статьи по **MODPO** (Multi-Objective Direct Preference Optimization), основная идея заключается в том, чтобы выравнивать модели по нескольким предпочтениям без использования RLHF (Reinforcement Learning from Human Feedback). В вашей задаче вы хотите применить этот подход к **машинному переводу**, чтобы учесть различные предпочтения в переводах (например, точность, стиль, краткость).
+
+Вот несколько ключевых шагов, как можно адаптировать подход **MODPO** для вашей задачи машинного перевода:
+
+### 1. **Подготовка данных**
+Как и в примерах из статьи, вам нужно собрать отзывы по разным метрикам качества перевода. Например:
+- **Точность перевода**: насколько перевод соответствует исходному смыслу.
+- **Краткость/конкретность**: возможно, необходимо избегать избыточных пояснений.
+- **Естественность**: насколько результат перевода звучит естественно на целевом языке.
+
+Для каждой из этих метрик вам нужно собрать данные, которые будут использоваться как предпочтения для обучения.
+
+### 2. **Использование модели с Hugging Face**
+У вас уже есть обученная модель, что упрощает задачу. Чтобы применить **MODPO** для настройки её поведения, следуйте этим шагам:
+
+- **Обучение модели вознаграждений**:
+  - На основе собранных предпочтений обучите несколько моделей вознаграждений, каждая из которых будет оценивать разные аспекты перевода. Например, одна модель может оценивать точность, другая — краткость, и т.д.
+  
+- **Применение MODPO**:
+  - Используйте подход MODPO для дальнейшего обучения вашей модели машинного перевода, как указано в статье:
+  
+    ```bash
+    PYTHONPATH=. accelerate launch --config_file scripts/accelerate_configs/multi_gpu.yaml --num_processes=8 \
+        scripts/modpo/beavertails/modpo.py \
+        --sft_model_name "имя_вашей_модели_с_Hugging_Face" \
+        --margin_reward_model_name "./путь_к_модели_вознаграждений" \
+        --prompt_template "BEGINNING OF CONVERSATION: USER: {raw_prompt} ASSISTANT:" \
+        --dataset_name "имя_вашего_датасета" \
+        --max_length 512 \
+        --w 0.5 \
+        --training_args.output_dir "./output/modpo_translation" \
+        --training_args.run_name "modpo_translation_run" \
+        --training_args.per_device_train_batch_size 6 \
+        --training_args.per_device_eval_batch_size 6 \
+        --training_args.gradient_accumulation_steps 2 \
+        --training_args.learning_rate 5e-4 \
+        --peft_config.r 64 \
+        --peft_config.target_modules q_proj k_proj v_proj o_proj \
+        --peft_config.lora_alpha 1 \
+        --peft_config.lora_dropout 0
+    ```
+
+- **Балансировка предпочтений**: Используя веса (`w`) для разных моделей вознаграждений, вы можете настраивать, насколько сильно учитываются те или иные аспекты (точность, краткость, естественность и т.д.).
+
+### 3. **Оценка результатов**
+- После обучения, используйте генерацию результатов и их оценку, чтобы проверить, насколько хорошо модель соблюдает баланс между точностью, краткостью и естественностью. Вы можете применить подобные скрипты:
+
+    ```bash
+    PYTHONPATH=. python3 scripts/modpo/beavertails/utils/gen.py \
+        --sft_model_name "имя_вашей_модели_с_Hugging_Face" \
+        --adapter_model_name "./output/modpo_translation/best_checkpoint" \
+        --prompt_template "BEGINNING OF CONVERSATION: USER: {raw_prompt} ASSISTANT:" \
+        --dataset_name "имя_вашего_датасета" \
+        --output_dir "./output/modpo_translation/gen" \
+        --max_length 512
+    ```
+
+### 4. **Дополнительные эксперименты и настройка**
+- Экспериментируйте с различными комбинациями предпочтений и весов для каждой задачи машинного перевода. Используйте кросс-валидацию и обратную связь от реальных пользователей, если это возможно.
+
+Этот процесс позволит вам настроить модель машинного перевода так, чтобы она соответствовала разным целям выравнивания (например, стилистика, краткость, точность), используя подходы MODPO.
