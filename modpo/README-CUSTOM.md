@@ -11,3 +11,16 @@
 Эта задача связана с устранением предвзятости к длине в задачах суммаризации текста.
 Модель должна избегать излишней многословности, выдавая более краткие и точные резюме. Для этого применяется штраф за длину (length penalty), который помогает уменьшить склонность модели к излишнему развертыванию ответов.
 
+## Other examples
+
+This repository also contains other off-the-shelf tuning recipes:
+
+- SFT (Supervised Fine-tuning): [`scripts/examples/sft/run.sh`](https://github.com/ZHZisZZ/modpo/blob/main/scripts/examples/sft/run.sh)
+- RM (Reward Modeling): [`scripts/examples/rm/run.sh`](https://github.com/ZHZisZZ/modpo/blob/main/scripts/examples/rm/run.sh)
+- DPO (Direct Preference Optimization): [`scripts/examples/dpo/run.sh`](https://github.com/ZHZisZZ/modpo/blob/main/scripts/examples/dpo/run.sh)
+
+To implement new alignment algorithms, please add new trainers at [`src/trainer`]
+Возможно, нам нужно залезть в эту директорию 
+
+
+(https://github.com/ZHZisZZ/modpo/blob/main/src/trainer).
