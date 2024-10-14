@@ -19,8 +19,13 @@ This repository also contains other off-the-shelf tuning recipes:
 - RM (Reward Modeling): [`scripts/examples/rm/run.sh`](https://github.com/ZHZisZZ/modpo/blob/main/scripts/examples/rm/run.sh)
 - DPO (Direct Preference Optimization): [`scripts/examples/dpo/run.sh`](https://github.com/ZHZisZZ/modpo/blob/main/scripts/examples/dpo/run.sh)
 
-To implement new alignment algorithms, please add new trainers at [`src/trainer`]
-Возможно, нам нужно залезть в эту директорию 
+To implement new alignment algorithms, please add new trainers at [`src/trainer`](https://github.com/ZHZisZZ/modpo/blob/main/src/trainer).
 
+Возможно, нам нужно залезть в эту директорию. 
 
-(https://github.com/ZHZisZZ/modpo/blob/main/src/trainer).
+## Customized datasets
+
+For supported datasets, refer to [`REAL_DATASET_CONFIGS(src/data/configs.py)`](https://github.com/ZHZisZZ/modpo/blob/main/src/data/configs.py#L19).
+To train on your datasets, add them under [`src/data/raw_data`](https://github.com/ZHZisZZ/modpo/blob/main/src/data/raw_data) and modify [`REAL_DATASET_CONFIGS(src/data/configs.py)`](https://github.com/ZHZisZZ/modpo/blob/main/src/data/configs.py#L19) accordingly. Please see [`src/data/raw_data/shp`](https://github.com/ZHZisZZ/modpo/blob/main/src/data/raw_data/shp.py) for an example.
+
+У нас свой датасет. Скорее всего, нужно сделать как они предлагают 
