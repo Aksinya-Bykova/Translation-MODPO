@@ -1,20 +1,19 @@
 from functools import partial
 from typing import Dict
 
-from src.data.raw_data.helpsteer import HelpSteerRDP
-
-from .raw_data import (
+from src.data.raw_data import (
     RawDatasetPreprocessor,
     HhRlhfRDP,
-    PKUSafeRlhfRDP, PKUSafeRlhf10KRDP,
+    PKUSafeRlhfRDP,
+    PKUSafeRlhf10KRDP,
     SHPRDP,
     StackExchangePairedRDP,
     SummarizeFromFeedbackRDP, 
     HelpSteerRDP,
     UltraFeedbackRDP,
+    CustomRDP,
 )
 from .raw_data.utils import DEFAULT_PROMPT_TEMPLATE
-
 
 REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
     ##### hh-rlhf (https://huggingface.co/datasets/Anthropic/hh-rlhf) #####
@@ -29,6 +28,8 @@ REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
         f"PKU-Alignment/PKU-SafeRLHF-10K-{dimension}": partial(PKUSafeRlhf10KRDP, dimension=dimension)
         for dimension in ["safer", "better"]
     },
+
+    "marulyanova/PKU-SafeRLHF-10K-Modified": CustomRDP,
 
     ##### stack-exchange-paired (https://huggingface.co/datasets/lvwerra/stack-exchange-paired) #####
     "lvwerra/stack-exchange-paired": StackExchangePairedRDP,
@@ -53,13 +54,6 @@ REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
         for dimension in ["overall", "helpfulness", "correctness", "coherence", "complexity", "verbosity"]
     },
 }
-
-
-# !WARNING: Synthetic datasets are WIP. These configs are just placeholders 
-SYNTHETIC_DATASET_CONFIGS = {
-
-}
-
 
 # MERGE two dicts
 DATASET_CONFIGS = {**REAL_DATASET_CONFIGS, **SYNTHETIC_DATASET_CONFIGS}
