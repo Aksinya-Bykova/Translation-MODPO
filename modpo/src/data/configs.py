@@ -11,8 +11,8 @@ from src.data.raw_data import (
     SummarizeFromFeedbackRDP, 
     HelpSteerRDP,
     UltraFeedbackRDP,
-    CustomRDP,
 )
+from src.data.raw_data.custom_dataset import MyCustomDatasetRDP
 from .raw_data.utils import DEFAULT_PROMPT_TEMPLATE
 
 REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
@@ -29,7 +29,7 @@ REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
         for dimension in ["safer", "better"]
     },
 
-    "marulyanova/PKU-SafeRLHF-10K-Modified": CustomRDP,  # Ваша кастомная настройка для нового датасета
+    "marulyanova/PKU-SafeRLHF-10K-Modified": CustomRDP,
 
     ##### stack-exchange-paired (https://huggingface.co/datasets/lvwerra/stack-exchange-paired) #####
     "lvwerra/stack-exchange-paired": StackExchangePairedRDP,
