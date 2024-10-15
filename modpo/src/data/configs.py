@@ -29,7 +29,7 @@ REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
         for dimension in ["safer", "better"]
     },
 
-    "marulyanova/PKU-SafeRLHF-10K-Modified": CustomRDP,
+    "marulyanova/PKU-SafeRLHF-10K-Modified": CustomRDP,  # Ваша кастомная настройка для нового датасета
 
     ##### stack-exchange-paired (https://huggingface.co/datasets/lvwerra/stack-exchange-paired) #####
     "lvwerra/stack-exchange-paired": StackExchangePairedRDP,
@@ -54,6 +54,8 @@ REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
         for dimension in ["overall", "helpfulness", "correctness", "coherence", "complexity", "verbosity"]
     },
 }
+
+SYNTHETIC_DATASET_CONFIGS = {}
 
 # MERGE two dicts
 DATASET_CONFIGS = {**REAL_DATASET_CONFIGS, **SYNTHETIC_DATASET_CONFIGS}
