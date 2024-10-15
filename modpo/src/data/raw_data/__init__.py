@@ -8,3 +8,5 @@ from .stack_exchange_paired import StackExchangePairedRDP
 from .summarize_from_feedback import SummarizeFromFeedbackRDP
 from .helpsteer import HelpSteerRDP
 from .ultrafeedback import UltraFeedbackRDP
+from .custom_module import CustomRDP
+
