@@ -7,7 +7,6 @@ import tyro
 from accelerate import Accelerator
 from peft import LoraConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
-from datasets import load_dataset
 
 from src.trainer.dpo_trainer import DPOTrainer
 from src.data.configs import DATASET_CONFIGS, DEFAULT_PROMPT_TEMPLATE
@@ -80,8 +79,8 @@ if not script_args.peft:
 print_local_main("loading model...")
 sft_model = AutoModelForCausalLM.from_pretrained(
     script_args.sft_model_name,
-    use_flash_attention_2=script_args.use_flash_attention_2,  # flash attn
-    torch_dtype=torch.bfloat16,  # necessary for llama2, otherwise will be cast to float32
+    use_flash_attention_2=script_args.use_flash_attention_2, # flash attn
+    torch_dtype=torch.bfloat16, # necessary for llama2, otherwise will be cast to float32
     **({"device_map": {"": Accelerator().local_process_index}} if not param_sharding_enabled() else {}),
 )
 sft_model.config.update({
@@ -96,15 +95,16 @@ tokenizer = AutoTokenizer.from_pretrained(script_args.sft_model_name, trust_remo
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
-# dataset - загрузка подмножества данных
-print_local_main("loading dataset...")
-dataset = load_dataset("PKU-Alignment/PKU-SafeRLHF-10K")
-
-# Выбор подмножества (1%)
-small_train_subset = dataset["train"].shuffle(seed=42).select(range(100))  # 1% данных
-small_eval_subset = dataset["validation"].shuffle(seed=42).select(range(10))  # 1% для валидации
-train_dataset = small_train_subset
-eval_dataset = small_eval_subset
+# dataset
+if not script_args.dataset_caching:
+    from datasets import disable_caching
+    disable_caching()
+rdp = DATASET_CONFIGS[script_args.dataset_name](
+    prompt_template=script_args.prompt_template,
+    sanity_check=script_args.sanity_check,
+)
+train_dataset = rdp.get_preference_dataset(split="train")
+eval_dataset  = rdp.get_preference_dataset(split="validation")
 
 # get ready for training
 print_local_main("start training...")
@@ -120,13 +120,10 @@ trainer = DPOTrainer(
     num_proc=script_args.num_proc,
     generate_during_eval=script_args.generate_during_eval,
 )
-
 if Accelerator().is_local_main_process and script_args.peft_config:
     trainer.model.print_trainable_parameters()
-
 trainer.train()
 
-# save model
 save_name = "best_checkpoint" if script_args.training_args.load_best_model_at_end else "final_checkpoint"
 trainer.model.save_pretrained(os.path.join(script_args.training_args.output_dir, save_name))
 trainer.tokenizer.save_pretrained(os.path.join(script_args.training_args.output_dir, save_name))
