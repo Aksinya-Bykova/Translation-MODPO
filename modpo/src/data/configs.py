@@ -55,7 +55,10 @@ REAL_DATASET_CONFIGS: Dict[str, RawDatasetPreprocessor] = {
     },
 }
 
-SYNTHETIC_DATASET_CONFIGS = {}
+# !WARNING: Synthetic datasets are WIP. These configs are just placeholders 
+SYNTHETIC_DATASET_CONFIGS = {
+
+}
 
 # MERGE two dicts
 DATASET_CONFIGS = {**REAL_DATASET_CONFIGS, **SYNTHETIC_DATASET_CONFIGS}
